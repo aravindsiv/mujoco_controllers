@@ -1,1 +1,4 @@
-data/
+*data/
+*trained_models/
+*__pycache__/
+*.out
