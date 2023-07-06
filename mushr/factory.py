@@ -3,7 +3,7 @@ from gym.envs.registration import register
 
 class MushrEnvironmentFactory:
     def __init__(self):
-        self.noise_levels = [0.01, 0.05, 0.1]
+        self.noise_levels = [0.01, 0.02, 0.04]
         self.noise_level_names = ["Low", "Med", "High"]
     
     def register_environments_with_position_goals(self):
