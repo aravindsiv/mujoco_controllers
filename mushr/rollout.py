@@ -1,5 +1,5 @@
 from factory import MushrEnvironmentFactory
-env_factory = MushrEnvironmentFactory()
+env_factory = MushrEnvironmentFactory(return_full_trajectory=True)
 env_factory.register_environments_with_position_and_orientation_goals()
 
 from stable_baselines3 import HER, SAC
@@ -17,6 +17,7 @@ if __name__ == "__main__":
     parser.add_argument('--model_path', type=str, default='trained_models/MushrObs_sac/best/best_model')
     parser.add_argument('--plan_file', type=str, default='plan.txt')
     parser.add_argument('--plot', action='store_true')
+    args = parser.parse_args()
 
     env = gym.make(args.env+"Env-v0")
     model = SAC.load(args.model_path,env=env)
@@ -32,7 +33,7 @@ if __name__ == "__main__":
         action_with_time = np.hstack([1.0, action])
         plan.append(action_with_time)
         obs, reward, done, info = env.step(action)
-        traj.append(obs['achieved_goal'])
+        traj.append(info['traj'])
 
     plan = np.vstack(plan)
     np.savetxt(args.plan_file,plan,delimiter=',',fmt='%f')

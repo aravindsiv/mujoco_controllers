@@ -56,7 +56,8 @@ class MushrReachEnv(gym.Env):
     env_limit = 10
     distance_threshold = 0.5
     def __init__(self,max_steps=30,noisy=False,use_obs=False,
-                use_orientation=False,noise_scale=0.01):
+                use_orientation=False,noise_scale=0.01,
+                return_full_trajectory=False):
         self.max_steps = max_steps
         self.mushr = Mushr(os.path.join(os.path.dirname(__file__),"assets/mushr.xml"),self.env_limit)
         self.mushr.reset()
@@ -75,6 +76,7 @@ class MushrReachEnv(gym.Env):
         self.noise_scale = noise_scale
         self.use_obs = use_obs
         self.use_orientation = use_orientation
+        self.return_full_trajectory = return_full_trajectory
 
     def reset(self,goal=None):
         self.mushr.reset()
@@ -114,12 +116,16 @@ class MushrReachEnv(gym.Env):
     def step(self,action):
         self.steps += 1
         self.mushr.apply_action(action,self.noisy)
+        current_traj = []
         for _ in range(self.prop_steps):
             for i in range(self.mushr.model.nv): self.mushr.data.qacc_warmstart[i] = 0 
             mujoco.mj_step(self.mushr.model,self.mushr.data)
+            if self.return_full_trajectory:
+                current_traj.append(self._get_obs()["achieved_goal"])
         obs = self._get_obs()
         info = {
             "is_success": self._terminal(obs["achieved_goal"],obs["desired_goal"]),
+            "traj": np.array(current_traj)
         }
         done = self._terminal(obs["achieved_goal"],obs["desired_goal"]) or self.steps >= self.max_steps
         reward = self.compute_reward(obs["achieved_goal"],obs["desired_goal"],{})

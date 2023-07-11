@@ -2,3 +2,5 @@
 *trained_models/
 *__pycache__/
 *.out
+*.png
+plan.txt
