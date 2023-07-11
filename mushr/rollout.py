@@ -16,6 +16,7 @@ if __name__ == "__main__":
     parser.add_argument('--env', type=str, default='MushrObs')
     parser.add_argument('--model_path', type=str, default='trained_models/MushrObs_sac/best/best_model')
     parser.add_argument('--plan_file', type=str, default='plan.txt')
+    parser.add_argument('--traj_file', type=str, default='traj.txt')
     parser.add_argument('--plot', action='store_true')
     args = parser.parse_args()
 
@@ -37,11 +38,12 @@ if __name__ == "__main__":
 
     plan = np.vstack(plan)
     np.savetxt(args.plan_file,plan,delimiter=',',fmt='%f')
+    traj = np.vstack(traj)
+    np.savetxt(args.traj_file,traj,delimiter=',',fmt='%f')
 
     if not args.plot:
         exit()
 
-    traj = np.vstack(traj)
     plt.figure(figsize=(8,8))
     plt.xlim(-env.env_limit,env.env_limit)
     plt.ylim(-env.env_limit,env.env_limit)
