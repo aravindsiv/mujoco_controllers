@@ -52,12 +52,11 @@ class Mushr:
         self.data.ctrl[1] = action[1] + np.random.normal(0,0.1) if noisy else action[1]
 
 class MushrReachEnv(gym.Env):
-    prop_steps = 100
     env_limit = 10
     distance_threshold = 0.5
     def __init__(self,max_steps=30,noisy=False,use_obs=False,
                 use_orientation=False,noise_scale=0.01,
-                return_full_trajectory=False):
+                return_full_trajectory=False, prop_steps=100):
         self.max_steps = max_steps
         self.mushr = Mushr(os.path.join(os.path.dirname(__file__),"assets/mushr.xml"),self.env_limit)
         self.mushr.reset()
@@ -77,6 +76,7 @@ class MushrReachEnv(gym.Env):
         self.use_obs = use_obs
         self.use_orientation = use_orientation
         self.return_full_trajectory = return_full_trajectory
+        self.prop_steps = prop_steps
 
     def reset(self,goal=None):
         self.mushr.reset()
