@@ -13,9 +13,10 @@ class MushrEnvironmentFactory:
         assert self.max_steering_angle <= 1.0
     
     def register_environments_with_position_goals(self):
-        register(id="MushrObsEnv-v0",entry_point=MushrReachEnv, kwargs={'noisy': False, 'use_obs': True, 'use_orientation': False, 'return_full_trajectory': self.return_full_trajectory})
+        register(id="MushrObsEnv-v0",entry_point=MushrReachEnv, kwargs={'noisy': False, 'use_obs': True, 'use_orientation': False, 'return_full_trajectory': self.return_full_trajectory, 'prop_steps': self.prop_steps})
         for i, noise_level in enumerate(self.noise_levels):
-            register(id="MushrObs"+self.noise_level_names[i]+"NoisyEnv-v0",entry_point=MushrReachEnv, kwargs={'noisy': True, 'use_obs': True, 'use_orientation': False, 'noise_scale': noise_level, 'return_full_trajectory': self.return_full_trajectory})
+            register(id="MushrObs"+self.noise_level_names[i]+"NoisyEnv-v0",entry_point=MushrReachEnv, kwargs={'noisy': True, 'use_obs': True, 'use_orientation': False, 'noise_scale': noise_level, 
+            'return_full_trajectory': self.return_full_trajectory, 'prop_steps': self.prop_steps})
         
     def register_environments_with_position_and_orientation_goals(self):
         register(id="MushrObsEnv-v0",entry_point=MushrReachEnv, kwargs={'noisy': False, 'use_obs': True, 'use_orientation': True, 'return_full_trajectory': self.return_full_trajectory})
