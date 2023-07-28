@@ -48,7 +48,6 @@ class Mushr:
         return s
     
     def apply_action(self, action, noisy=False):
-
         self.data.ctrl[0] = action[0] + np.random.normal(0,0.1) if noisy else action[0]
         self.data.ctrl[1] = action[1] + np.random.normal(0,0.1) if noisy else action[1]
 
