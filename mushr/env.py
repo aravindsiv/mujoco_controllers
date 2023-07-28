@@ -25,7 +25,7 @@ class Mushr:
         self.initial_qvel = np.copy(self.data.qvel)
 
         self.range = np.array([env_limit,env_limit,2*np.pi,2.0,2*np.pi/3])
-    
+
     def reset(self):
         self.data.qpos = np.copy(self.initial_qpos)
         self.data.qvel = np.copy(self.initial_qvel)
@@ -48,6 +48,7 @@ class Mushr:
         return s
     
     def apply_action(self, action, noisy=False):
+
         self.data.ctrl[0] = action[0] + np.random.normal(0,0.1) if noisy else action[0]
         self.data.ctrl[1] = action[1] + np.random.normal(0,0.1) if noisy else action[1]
 
@@ -57,7 +58,7 @@ class MushrReachEnv(gym.Env):
     distance_threshold = 0.5
     def __init__(self,max_steps=30,noisy=False,use_obs=False,
                 use_orientation=False,noise_scale=0.01,
-                return_full_trajectory=False):
+                return_full_trajectory=False, max_speed=1.0, max_steering_angle=1.0):
         self.max_steps = max_steps
         self.mushr = Mushr(os.path.join(os.path.dirname(__file__),"assets/mushr.xml"),self.env_limit)
         self.mushr.reset()
@@ -77,6 +78,9 @@ class MushrReachEnv(gym.Env):
         self.use_obs = use_obs
         self.use_orientation = use_orientation
         self.return_full_trajectory = return_full_trajectory
+        
+        self.max_speed = max_speed
+        self.max_steering_angle = max_steering_angle
 
     def reset(self,goal=None):
         self.mushr.reset()
@@ -115,7 +119,12 @@ class MushrReachEnv(gym.Env):
 
     def step(self,action):
         self.steps += 1
+        
+        applied_action = np.zeros_like(action)
+        applied_action[0] = action[0]*self.max_steering_angle
+        applied_action[1] = action[1]*self.max_speed
         self.mushr.apply_action(action,self.noisy)
+        
         current_traj = []
         for _ in range(self.prop_steps):
             for i in range(self.mushr.model.nv): self.mushr.data.qacc_warmstart[i] = 0 

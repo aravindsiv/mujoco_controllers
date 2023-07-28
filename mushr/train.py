@@ -1,11 +1,12 @@
+import numpy as np 
 from factory import MushrEnvironmentFactory
-env_factory = MushrEnvironmentFactory()
+env_factory = MushrEnvironmentFactory(max_speed=0.5,max_steering_angle=0.5)
 env_factory.register_environments_with_position_and_orientation_goals()
+# env_factory.register_environments_with_position_goals()
 
 from stable_baselines3 import HER, SAC
 import gym
 import os
-import numpy as np 
 np.set_printoptions(suppress=True)
 import matplotlib.pyplot as plt
 

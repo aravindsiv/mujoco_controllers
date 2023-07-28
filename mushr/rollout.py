@@ -1,5 +1,5 @@
 from factory import MushrEnvironmentFactory
-env_factory = MushrEnvironmentFactory(return_full_trajectory=True)
+env_factory = MushrEnvironmentFactory(return_full_trajectory=True, max_speed=0.5,max_steering_angle=0.5)
 env_factory.register_environments_with_position_and_orientation_goals()
 
 from stable_baselines3 import HER, SAC
@@ -16,7 +16,7 @@ if __name__ == "__main__":
     parser.add_argument('--env', type=str, default='MushrObs')
     parser.add_argument('--model_path', type=str, default='trained_models/MushrObs_sac/best/best_model')
     parser.add_argument('--plan_file', type=str, default='plan.txt')
-    parser.add_argument('--traj_file', type=str, default='traj.txt')
+    parser.add_argument('--traj_file', type=str, default='simulated_traj.txt')
     parser.add_argument('--plot', action='store_true')
     args = parser.parse_args()
 
@@ -25,13 +25,13 @@ if __name__ == "__main__":
 
     done = False
     # Enter the goal here.
-    obs = env.reset(goal=[-3.,0.,3.14])
+    obs = env.reset(goal=[3.,0.,0.])
     traj = [obs['achieved_goal']]
     goal = obs['desired_goal']
     plan = []
     while not done:
         action, _ = model.predict(obs,deterministic=True)
-        action_with_time = np.hstack([1.0, action])
+        action_with_time = np.hstack([1.0, env_factory.get_applied_action(action)])
         plan.append(action_with_time)
         obs, reward, done, info = env.step(action)
         traj.append(info['traj'])
