@@ -1,4 +1,5 @@
-from env import MushrReachEnv
+from mushr_env import MushrReachEnv
+from trailer_car_env import TrailerCarEnv
 from gym.envs.registration import register
 import numpy as np
 
@@ -20,6 +21,7 @@ class MushrEnvironmentFactory:
         
     def register_environments_with_position_and_orientation_goals(self):
         register(id="MushrObsEnv-v0",entry_point=MushrReachEnv, kwargs={'noisy': False, 'use_obs': True, 'use_orientation': True, 'return_full_trajectory': self.return_full_trajectory})
+        register(id="TrailerCarEnv-v0",entry_point=TrailerCarEnv, kwargs={'return_full_trajectory': self.return_full_trajectory})
         for i, noise_level in enumerate(self.noise_levels):
             register(id="MushrObs"+self.noise_level_names[i]+"NoisyEnv-v0",entry_point=MushrReachEnv, kwargs={'noisy': True, 'use_obs': True, 'use_orientation': True, 'noise_scale': noise_level, 'return_full_trajectory': self.return_full_trajectory})
     

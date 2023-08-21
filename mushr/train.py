@@ -10,7 +10,7 @@ import os
 np.set_printoptions(suppress=True)
 import matplotlib.pyplot as plt
 
-env_name = "MushrObs"
+env_name = "TrailerCar"
 
 env = gym.make(env_name+"Env-v0")
 alg = SAC
@@ -20,7 +20,7 @@ model = HER('MlpPolicy', env, alg, n_sampled_goal=4,
             goal_selection_strategy='future',
             verbose=1, buffer_size=int(1e6),
             learning_rate=1e-3,
-            gamma=0.95, batch_size=256,max_episode_length=30)
+            gamma=0.95, batch_size=256,max_episode_length=env.max_steps)
 
 from stable_baselines3.common.callbacks import EvalCallback, CheckpointCallback, CallbackList
 from stable_baselines3.common.vec_env import DummyVecEnv
