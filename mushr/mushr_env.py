@@ -7,14 +7,7 @@ import mujoco
 
 from gym import error, logger, spaces 
 
-def goal_distance(goal_a, goal_b):
-    assert goal_a.shape == goal_b.shape
-    return np.linalg.norm(goal_a - goal_b, axis=-1)
-
-def quat2euler(q_mj):
-    q_scipy = np.array([q_mj[1],q_mj[2],q_mj[3],q_mj[0]])
-    r = R.from_quat(q_scipy)
-    return r.as_euler('xyz',degrees=False)
+import utils
 
 class Mushr:
     def __init__(self,xml_path,env_limit=10):
@@ -38,7 +31,7 @@ class Mushr:
         if use_obs:
             # Obs: [x, y, theta, v, steering_angle]
             vel = np.sqrt(self.data.qvel[0]**2+self.data.qvel[1]**2)
-            s = np.array([self.data.qpos[0],self.data.qpos[1],quat2euler(self.data.qpos[3:7])[2],vel,self.data.qpos[7]])
+            s = np.array([self.data.qpos[0],self.data.qpos[1],utils.quat2euler(self.data.qpos[3:7])[2],vel,self.data.qpos[7]])
             if noisy:
                 s += np.random.normal(0,noise_scale*self.range)
         else:
@@ -102,7 +95,7 @@ class MushrReachEnv(gym.Env):
                 achieved_goal = np.array([obs[0],obs[1]])
         else:
             if self.use_orientation:
-                achieved_goal = np.array([obs[0],obs[1],quat2euler(obs[3:7])[2]])
+                achieved_goal = np.array([obs[0],obs[1],utils.quat2euler(obs[3:7])[2]])
             else:
                 achieved_goal = np.array([obs[0],obs[1]])  
         return {
@@ -112,10 +105,10 @@ class MushrReachEnv(gym.Env):
         } 
 
     def _terminal(self,s,g):
-        return goal_distance(s,g) < self.distance_threshold
+        return utils.goal_distance(s,g) < self.distance_threshold
 
     def compute_reward(self,ag,dg,info):
-        return -(goal_distance(ag,dg) >= self.distance_threshold).astype(np.float32)
+        return -(utils.goal_distance(ag,dg) >= self.distance_threshold).astype(np.float32)
 
     def step(self,action):
         self.steps += 1

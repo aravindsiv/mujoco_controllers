@@ -31,7 +31,7 @@ if __name__ == "__main__":
     plan = []
     while not done:
         action, _ = model.predict(obs,deterministic=True)
-        action_with_time = np.hstack([1.0, env_factory.get_applied_action(action)])
+        action_with_time = np.hstack([1.0, env_factory.get_applied_action(action, args.env)])
         plan.append(action_with_time)
         obs, reward, done, info = env.step(action)
         traj.append(info['traj'])

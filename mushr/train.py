@@ -1,8 +1,10 @@
 import numpy as np 
 from factory import MushrEnvironmentFactory
+
+
 env_factory = MushrEnvironmentFactory(max_speed=0.5,max_steering_angle=0.5)
-env_factory.register_environments_with_position_and_orientation_goals()
-# env_factory.register_environments_with_position_goals()
+# env_factory.register_environments_with_position_and_orientation_goals()
+env_factory.register_environments_with_position_goals()
 
 from stable_baselines3 import HER, SAC
 import gym
@@ -10,11 +12,11 @@ import os
 np.set_printoptions(suppress=True)
 import matplotlib.pyplot as plt
 
-env_name = "TrailerCar"
+env_name = "QuadrotorObs"
 
 env = gym.make(env_name+"Env-v0")
 alg = SAC
-num_steps = int(5e5)
+num_steps = int(1e6)
 
 model = HER('MlpPolicy', env, alg, n_sampled_goal=4,
             goal_selection_strategy='future',

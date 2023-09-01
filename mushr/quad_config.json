@@ -1,0 +1,7 @@
+[
+  {
+    "timestep": 0.001,
+    "prop_steps": 10,
+    "max_steps": 250
+  }
+]
