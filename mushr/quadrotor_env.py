@@ -1,8 +1,6 @@
 import numpy as np
 import os
 
-import pdb
-
 
 import gym
 import mujoco
@@ -29,34 +27,18 @@ class Quadrotor:
 
         mujoco.mj_forward(self.model, self.data)
 
-    def get_obs(self, noisy=False, use_obs=False, noise_scale=0.01):
-        if use_obs:
-            # Obs: [x, y, z, theta_x, theta_y, theta_z, v]
-            vel = np.sqrt(self.data.qvel[0] ** 2 + self.data.qvel[1] ** 2 + self.data.qvel[2] ** 2)
-            s = np.array(
-                [
-                    self.data.qpos[0],
-                    self.data.qpos[1],
-                    self.data.qpos[2],
-                    *utils.quat2euler(self.data.qpos[3:7]),
-                    vel,
-                ])
-            if noisy:
-                s += np.random.normal(0, noise_scale * self.range)
-        else:
-            s = np.concatenate([self.data.qpos, self.data.qvel])
-            if noisy:
-                raise NotImplementedError
-        return s
+    def get_obs(self):
+        return np.concatenate([self.data.qpos, self.data.qvel])
 
-    def apply_action(self, action, noisy=False):
-        self.data.ctrl[0] = action[0] + np.random.normal(0, 0.1) if noisy else action[0]
-        self.data.ctrl[1] = action[1] + np.random.normal(0, 0.1) if noisy else action[1]
-        self.data.ctrl[2] = action[2] + np.random.normal(0, 0.1) if noisy else action[2]
-        self.data.ctrl[3] = action[3] + np.random.normal(0, 0.1) if noisy else action[3]
+    def apply_action(self, action):
+        self.data.ctrl[0] = action[0]
+        self.data.ctrl[1] = action[1]
+        self.data.ctrl[2] = action[2]
+        self.data.ctrl[3] = action[3]
 
 class QuadrotorReachEnv(gym.Env):
     env_limit = 10
+    goal_limit = 1
     distance_threshold = 0.5
 
     def __init__(self, max_steps=30, noisy=False, use_obs=False,
@@ -72,7 +54,7 @@ class QuadrotorReachEnv(gym.Env):
         self.quadrotor.reset()
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(4,))
 
-        self.obs_dims = 7 if use_obs else self.quadrotor.model.nq + self.quadrotor.model.nv
+        self.obs_dims = self.quadrotor.model.nq + self.quadrotor.model.nv
         self.goal_dims = 3
 
         self.observation_space = spaces.Dict({
@@ -81,10 +63,6 @@ class QuadrotorReachEnv(gym.Env):
             "desired_goal": spaces.Box(low=-np.inf, high=np.inf, shape=(self.goal_dims,))
         })
 
-        self.noisy = noisy
-        self.noise_scale = noise_scale
-        self.use_obs = use_obs
-        self.use_orientation = use_orientation
         self.return_full_trajectory = return_full_trajectory
 
         self.max_speed = max_speed
@@ -95,26 +73,16 @@ class QuadrotorReachEnv(gym.Env):
         self.quadrotor.reset()
         self.steps = 0
 
-        pdb.set_trace()
         if goal is None:
-            self.goal = np.random.uniform([0, 0, 0], 0, size=(self.goal_dims, ))
+            self.goal = np.random.uniform([-self.goal_limit, -self.goal_limit, 0], self.goal_limit, size=(self.goal_dims, ))
         else:
             self.goal = goal
         return self._get_obs()
 
     def _get_obs(self):
-        obs = self.quadrotor.get_obs(noisy=self.noisy, use_obs=self.use_obs, noise_scale=self.noise_scale)
+        obs = self.quadrotor.get_obs()
 
-        if self.use_orientation:
-            orientation = obs[3:6] if self.use_obs else utils.quat2euler(obs[3:7])
-            achieved_goal = np.array([
-                obs[0],
-                obs[1],
-                obs[2],
-                *orientation,
-            ])
-        else:
-            achieved_goal = np.array([obs[0], obs[1], obs[2]])
+        achieved_goal = np.array([obs[0], obs[1], obs[2]])
 
         return {
             "observation": np.float32(obs),
@@ -136,7 +104,7 @@ class QuadrotorReachEnv(gym.Env):
         applied_action[1] = action[1]
         applied_action[2] = action[2]
         applied_action[3] = action[3]
-        self.quadrotor.apply_action(applied_action, self.noisy)
+        self.quadrotor.apply_action(applied_action)
 
         current_traj = []
         for _ in range(self.prop_steps):
@@ -155,7 +123,7 @@ class QuadrotorReachEnv(gym.Env):
 
 
 if __name__ == "__main__":
-    env = QuadrotorReachEnv(max_steps=250, prop_steps=10)
+    env = QuadrotorReachEnv(max_steps=250, prop_steps=5)
     obs = env.reset()
     traj = [np.copy(obs["observation"])]
     for _ in range(300):
