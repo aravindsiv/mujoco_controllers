@@ -1,5 +1,5 @@
 from mushr_env import MushrReachEnv
-from quadrotor_env import QuadrotorReachEnv
+from quadrotor_quat import QuadrotorReachEnv
 from trailer_car_env import TrailerCarEnv
 from gym.envs.registration import register
 import numpy as np

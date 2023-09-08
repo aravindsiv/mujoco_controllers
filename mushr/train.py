@@ -2,7 +2,7 @@ import numpy as np
 from factory import MushrEnvironmentFactory
 
 
-env_factory = MushrEnvironmentFactory(max_speed=0.5,max_steering_angle=0.5)
+env_factory = MushrEnvironmentFactory(max_speed=0.5,max_steering_angle=0.5, max_steps=250, prop_steps=2)
 # env_factory.register_environments_with_position_and_orientation_goals()
 env_factory.register_environments_with_position_goals()
 
@@ -33,7 +33,12 @@ train_model = True
 eval_env = DummyVecEnv([lambda: gym.make(env_name+'Env-v0')])
 eval_env = ObsDictWrapper(eval_env)
 
-checkpt_path = "./trained_models/"+env_name+"_sac/"
+checkpt_path = "./trained_models/"+env_name+"_2box_sac/"
+
+load_path = "./trained_models/"+env_name+"_2box_sac/"
+
+# model = HER.load(checkpt_path+"/best/best_model", env=env)
+
 if not os.path.exists(checkpt_path):
     os.makedirs(checkpt_path)
 
@@ -45,4 +50,4 @@ if train_model:
     model.learn(int(num_steps),callback=callback)
     model.save(checkpt_path)
 else:
-    model = SAC.load(checkpt_path+"/best/best_model",env=env)
+    model = SAC.load(checkpt_path+"/best/best_model", env=env)

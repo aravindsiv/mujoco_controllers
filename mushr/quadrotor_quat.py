@@ -9,6 +9,8 @@ from gym import error, logger, spaces
 
 import utils
 
+np.set_printoptions(suppress=True)
+
 class Quadrotor:
     def __init__(self, xml_path, env_limit=10):
         self.model = mujoco.MjModel.from_xml_path(xml_path)
@@ -50,7 +52,7 @@ class QuadrotorReachEnv(gym.Env):
         print('Prop Steps: ', prop_steps)
 
         self.max_steps = max_steps
-        self.quadrotor = Quadrotor(os.path.join(os.path.dirname(__file__), "assets/quadrotor.xml"), self.env_limit)
+        self.quadrotor = Quadrotor(os.path.join(os.path.dirname(__file__), "assets/quadrotor_quat.xml"), self.env_limit)
         self.quadrotor.reset()
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(4,))
 
@@ -123,13 +125,13 @@ class QuadrotorReachEnv(gym.Env):
 
 
 if __name__ == "__main__":
-    env = QuadrotorReachEnv(max_steps=250, prop_steps=5)
+    env = QuadrotorReachEnv(max_steps=250, prop_steps=2)
     obs = env.reset()
     traj = [np.copy(obs["observation"])]
     for _ in range(300):
-        action = env.action_space.sample()
-        action = np.array([1.0, 1.0, 1.0, 1.0])
-        obs, reward, done, _ = env.step(action)
+        next_action = env.action_space.sample()
+        next_action = np.array([1.0, 0, 0, 0])
+        obs, reward, done, _ = env.step(next_action)
         traj.append(np.copy(obs["observation"]))
         print("Achieved: ", obs["achieved_goal"])
         print("Desired: ", obs["desired_goal"])
