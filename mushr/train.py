@@ -2,7 +2,27 @@ import numpy as np
 from factory import MushrEnvironmentFactory
 
 
-env_factory = MushrEnvironmentFactory(max_speed=0.5,max_steering_angle=0.5, max_steps=250, prop_steps=2)
+env_factory = MushrEnvironmentFactory(
+    max_speed=0.5,
+    max_steering_angle=0.5,
+    max_steps=100,
+    prop_steps=10,
+    goal_limits=[0, 5],
+    with_obstacles=True,
+)
+
+env_name = "X2Obs"
+
+# _0_5_100_sac - 100 max steps 10 prop steps 4 goal limit
+# _0_5_100_10_sac - 100 max steps 10 prop steps 5 goal limit
+# _0_10_sac - 150 max steps 10 prop steps 10 goal limit
+
+checkpt_path = "./trained_models/"+env_name+"_0_5_100_10_obstacles_sac/"
+load_path = "./trained_models/"+env_name+"_0_5_100_10_sac/"
+
+load_model = True
+train_model = True
+
 # env_factory.register_environments_with_position_and_orientation_goals()
 env_factory.register_environments_with_position_goals()
 
@@ -10,13 +30,10 @@ from stable_baselines3 import HER, SAC
 import gym
 import os
 np.set_printoptions(suppress=True)
-import matplotlib.pyplot as plt
-
-env_name = "QuadrotorObs"
 
 env = gym.make(env_name+"Env-v0")
 alg = SAC
-num_steps = int(1e6)
+num_steps = int(3e6)
 
 model = HER('MlpPolicy', env, alg, n_sampled_goal=4,
             goal_selection_strategy='future',
@@ -28,21 +45,17 @@ from stable_baselines3.common.callbacks import EvalCallback, CheckpointCallback,
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.her import ObsDictWrapper
 
-train_model = True
 
 eval_env = DummyVecEnv([lambda: gym.make(env_name+'Env-v0')])
 eval_env = ObsDictWrapper(eval_env)
-
-checkpt_path = "./trained_models/"+env_name+"_2box_sac/"
-
-load_path = "./trained_models/"+env_name+"_2box_sac/"
-
-# model = HER.load(checkpt_path+"/best/best_model", env=env)
 
 if not os.path.exists(checkpt_path):
     os.makedirs(checkpt_path)
 
 if train_model:
+    if load_model:
+        model = HER.load(load_path + "/best/best_model", env=env, verbose=1)
+
     checkpoint_callback = CheckpointCallback(save_freq=10000,save_path=checkpt_path)
     eval_callback = EvalCallback(eval_env,n_eval_episodes=100,eval_freq=1e4,best_model_save_path=checkpt_path+"best/",
                             log_path=checkpt_path+"logs/",deterministic=True)
